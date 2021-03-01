@@ -25,7 +25,6 @@ static uint32_t ip_str_to_bin(const uint8_t *ip_addr){
 	uint32_t ip_bin;
 	sscanf(ip_addr, "%hhu.%hhu.%hhu.%hhu" ,&ip_num[3],&ip_num[2],&ip_num[1],&ip_num[0]);
 	if(ip_num[0]<=0 | ip_num[0]>=255){
-		printf("Invalid IP address\n");
 		return INVALID_IP;
 	}
 	ip_bin = ip_num[3]<<24 | ip_num[2]<<16 | ip_num[1]<<8 | ip_num[0];
@@ -46,19 +45,38 @@ static void get_broadcast_address(const uint8_t *ip_addr, const uint8_t mask, ui
 		lmask = ((1<<(32-mask))-1);
 		ip_bin = ip_bin | lmask;
 		ip_bin_to_str(ip_bin,output_buffer);
+	} else {
+		printf("Invalid IP detected, not calculating broadcast address\n");
 	}
 
 	return;
 }
 
+static uint32_t get_ip_integral_equivalent(const uint8_t *ip_address){
+
+	uint32_t ip_int;
+
+	if(INVALID_IP == (ip_int = ip_str_to_bin(ip_address))){
+		printf("Invalid IP detected, not converting equivalent integer\n");
+		return INVALID_IP;
+	} else {
+		return ip_int;
+	}
+}
+
+
 int main(void){
 
 	uint8_t ipadd_buffer[PREFIX_LEN];
 	memset(ipadd_buffer,0,PREFIX_LEN);
-	const uint8_t *ip_add = "192.168.2.10";
-	const uint8_t mask = 20;
+	const uint8_t *ip_add = "192.168.2.1";
+	const uint8_t mask = 24;
+	uint32_t ip_int;
 	get_broadcast_address(ip_add, mask, ipadd_buffer);
-	printf("Broadcast address = %s\n" ,ipadd_buffer);
+	if ((*ipadd_buffer) != 0)
+		printf("Broadcast address = %s\n" ,ipadd_buffer);
+	if (INVALID_IP != (ip_int = get_ip_integral_equivalent(ip_add)))
+		printf("Integer equivalent for ip address %s is %u\n" ,ip_add,ip_int);
 
 	return 0;
 }
