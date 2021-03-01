@@ -14,7 +14,8 @@ static void ip_bin_to_str(uint32_t ip_bin, uint8_t *buffer){
 		ip_bin>>=8;
 		i++;
 	}
-	sprintf(buffer, "%hhu.%hhu.%hhu.%hhu" ,ip_num[3],ip_num[2],ip_num[1],ip_num[0]);
+	if(!(ip_num[0]<0 | ip_num[0]>255))
+		sprintf(buffer, "%hhu.%hhu.%hhu.%hhu" ,ip_num[3],ip_num[2],ip_num[1],ip_num[0]);
 
 	return;
 }
@@ -45,6 +46,7 @@ static void get_broadcast_address(const uint8_t *ip_addr, const uint8_t mask, ui
 		lmask = ((1<<(32-mask))-1);
 		ip_bin = ip_bin | lmask;
 		ip_bin_to_str(ip_bin,output_buffer);
+		printf("Broadcast address = %s\n" ,output_buffer);
 	} else {
 		printf("Invalid IP detected, not calculating broadcast address\n");
 	}
@@ -60,8 +62,20 @@ static uint32_t get_ip_integral_equivalent(const uint8_t *ip_address){
 		printf("Invalid IP detected, not converting equivalent integer\n");
 		return INVALID_IP;
 	} else {
+		printf("Integer equivalent for ip address %s is %u\n" ,ip_address,ip_int);
 		return ip_int;
 	}
+}
+
+static void get_abcd_ip_format(uint32_t ip_addr, uint8_t *buffer){
+	
+	ip_bin_to_str(ip_addr, buffer);
+	if((*buffer) == 0)
+		printf("Invalid IP detected, not converting equivalent abcd format\n");
+	else
+		printf("ip %d in A.B.C.D format is %s\n" ,ip_addr,buffer);
+
+	return;
 }
 
 
@@ -69,14 +83,14 @@ int main(void){
 
 	uint8_t ipadd_buffer[PREFIX_LEN];
 	memset(ipadd_buffer,0,PREFIX_LEN);
-	const uint8_t *ip_add = "192.168.2.1";
+	const uint8_t *ip_add = "192.168.2.2";
 	const uint8_t mask = 24;
 	uint32_t ip_int;
 	get_broadcast_address(ip_add, mask, ipadd_buffer);
-	if ((*ipadd_buffer) != 0)
-		printf("Broadcast address = %s\n" ,ipadd_buffer);
-	if (INVALID_IP != (ip_int = get_ip_integral_equivalent(ip_add)))
-		printf("Integer equivalent for ip address %s is %u\n" ,ip_add,ip_int);
+	ip_int = get_ip_integral_equivalent(ip_add);
+	memset(ipadd_buffer,0,PREFIX_LEN);
+	if(INVALID_IP != ip_int)
+		get_abcd_ip_format(ip_int, ipadd_buffer);
 
 	return 0;
 }
